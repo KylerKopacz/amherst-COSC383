@@ -242,7 +242,7 @@ int upperBits(int n) {
   // the ! operator basically is 1 if the value we are using it
   // on is greater than 0, which can help here when we have the special
   // case where 0 messes things up. 
-  // Basically, we can just do some fancy stuff to get subtraction to
+  // Basically, we can just do some fancy stuff to get zeros to
   // work because we know that we are going to have 32 - n zeros.
   return (~0 & (!n + (~1 + 1))) << (32 + (~n + 1));
 }
@@ -353,7 +353,22 @@ int bitMask(int highbit, int lowbit) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+  //we want to and with all ones to get the answer that we want to return
+  //we know that !!x can either be a 0 or a 1, and negating that value 
+  //will give us either all 1s or all 0s, and we can AND with those to get the
+  //value that we want. We can OR those two sides because one side is going
+  //to be all zeros for sure, so then we can just return that when
+  //we are done.
+  int whichOne = !!x;
+
+  //in order to make all ones or all zeros, so we can return a value
+  int negation = ~whichOne + 1;
+
+  //now we know that we are going to have atleast one side be all ones, and
+  //so we can just AND the negation of that to clear the side that doesnt matter.
+  int value = (negation & y) | (~negation & z);
+
+  return value;
 }
 /* 
  * rotateRight - Rotate x to the right by n
@@ -364,7 +379,34 @@ int conditional(int x, int y, int z) {
  *   Rating: 3 
  */
 int rotateRight(int x, int n) {
-  return 2;
+  //the number of zeros that we are going to have in the mask
+  int zeros = 31 + (~n + 1);
+
+  printf("zeros: %d\n", zeros);
+  
+  int mask = ~(~0 << n);
+
+  printf("Mask: %x\n", mask);
+
+  int savedValue = mask & x;
+
+  printf("Saved Value: %x\n", savedValue);
+
+  int negation = !!x;
+
+  int bitsToClear = ~(~0 << zeros);
+
+  printf("Bits to clear: %x\n", bitsToClear);
+
+  int valueToSet = savedValue << zeros;
+
+  printf("Value to set: %x\n", valueToSet);
+
+  int value = ((x >> n) | bitsToClear) | valueToSet;
+
+  printf("Value: %x\n", value);
+  
+  return value;
 }
 /* 
  * subOK - Determine if can compute x-y without overflow
