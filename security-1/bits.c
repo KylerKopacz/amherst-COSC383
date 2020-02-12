@@ -380,31 +380,37 @@ int conditional(int x, int y, int z) {
  */
 int rotateRight(int x, int n) {
   //the number of zeros that we are going to have in the mask
-  int zeros = 31 + (~n + 1);
-
-  printf("zeros: %d\n", zeros);
+  int zeros = 32 + (~n + 1);
+  //printf("zeros: %d\n", zeros);
   
+  //the mask that we are going to use to save the values
+  //that are being chopped off
   int mask = ~(~0 << n);
+  //printf("Mask: %x\n", mask);
 
-  printf("Mask: %x\n", mask);
-
+  //the values that are going to be chopped off
   int savedValue = mask & x;
+  //printf("Saved Value: %x\n", savedValue);
 
-  printf("Saved Value: %x\n", savedValue);
-
-  int negation = !!x;
-
+  //the bits at the end of the initial value that have to be cleared
   int bitsToClear = ~(~0 << zeros);
+  //printf("Bits to clear: %x\n", bitsToClear);
 
-  printf("Bits to clear: %x\n", bitsToClear);
-
+  //the chopped off values that are going to be "wrapped"
   int valueToSet = savedValue << zeros;
+  //printf("Value to set: %x\n", valueToSet);
 
-  printf("Value to set: %x\n", valueToSet);
+  //if the value is one, then we need to make sure that the mask is all ones
+  int whichOne = !n;
+  //printf("Zero or nah: %x\n", whichOne);
 
-  int value = ((x >> n) | bitsToClear) | valueToSet;
+  //in order to make all ones or all zeros, so we can return a value
+  int negation = ~whichOne + 1;
+  //printf("negation value: %x\n", negation);
 
-  printf("Value: %x\n", value);
+  //the final value that is going to be returned
+  int value = (x >> n) & ((~negation & bitsToClear) | (negation & ~0)) | valueToSet ;
+  //printf("Value: %x\n", value);
   
   return value;
 }
@@ -417,7 +423,35 @@ int rotateRight(int x, int n) {
  *   Rating: 3
  */
 int subOK(int x, int y) {
-  return 2;
+  //get the sign of x
+  int xSign = x >> 31;
+
+  //we are never working with y. We are adding negative y, 
+  //so get the sign of that
+  int ySign = ~(y >> 31);
+
+  // do the actual subtraction and get the sign of that too
+  int subtraction = x + (~y + 1);
+  int subSign = subtraction >> 31;
+  
+  // printf("==============================\n");
+  // printf("subSign = %x\n", subSign);
+  // printf("xSign = %x\n", xSign);
+  // printf("ySign = %x\n", ySign);
+  // printf("==============================\n");
+
+  //if the signs are the same, then the value is going to be 0
+  int value = xSign ^ ySign;
+
+  //same with these values
+  int value2 = xSign ^ subSign;
+
+  //now if either of these are 0, then we don't have to really do this check. 
+  //If they're the same, then we know that overflow is possible.
+  int finalValue = ~value & value2;
+
+  //return whether that final check is 0 or non-0
+  return !finalValue;
 }
 /* 
  * absVal - absolute value of x
@@ -428,7 +462,18 @@ int subOK(int x, int y) {
  *   Rating: 4
  */
 int absVal(int x) {
-  return 2;
+  //get the sign of the value
+  int sign = x >> 31;
+
+  //now if the sign is positive, then we just add 
+  //the initial value to it. 
+  int posAbs = sign + x;
+
+  //now if the sign is negative, that means that
+  //sign is going to be all ones. Meaning that if you
+  //XOR by all ones, it is going to flip all the bits of
+  //whatever you XOR, which is how the negation happens.
+  return posAbs ^ sign;
 }
 /*
  * bitCount - returns count of number of 1's in word
@@ -487,5 +532,14 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 int sm2tc(int x) {
-  return 2;
+  //get the sign of the value
+  int sign = x >> 31;
+
+  printf("Adding the negation: %d + %d = %d\n", x, ~x, (x + ~x) ^ sign);
+
+  //now if the sign is negative, that means that
+  //sign is going to be all ones. Meaning that if you
+  //XOR by all ones, it is going to flip all the bits of
+  //whatever you XOR, which is how the negation happens.
+  return (x + ~x) ^ sign;
 }
