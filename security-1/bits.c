@@ -174,6 +174,7 @@ NOTES:
  *   Rating: 1
  */
 int bitAnd(int x, int y) {
+   //easily done on paper
   return ~ (~x | ~y);
 }
 /* 
@@ -184,6 +185,7 @@ int bitAnd(int x, int y) {
  *   Rating: 1
  */
 int bitOr(int x, int y) {
+  //same as the above. Nice
   return ~(~x & ~y);
 }
 /* 
@@ -194,6 +196,7 @@ int bitOr(int x, int y) {
  *   Rating: 1
  */
 int bitNor(int x, int y) {
+  //not the above
   return ~x & ~y;
 }
 /* 
@@ -239,12 +242,13 @@ int minusOne(void) {
  *  Rating: 1
  */
 int upperBits(int n) {
-  // the ! operator basically is 1 if the value we are using it
-  // on is greater than 0, which can help here when we have the special
-  // case where 0 messes things up. 
-  // Basically, we can just do some fancy stuff to get zeros to
-  // work because we know that we are going to have 32 - n zeros.
-  return (~0 & (!n + (~1 + 1))) << (32 + (~n + 1));
+  // Its not as easy as just padding the value with 32 - n bits, because
+  // C is dumb and freaks out when you try to shift more than 31 bits. 
+  // So you have to add the special case where you return all zeros if you
+  // have to pad 0 upper bits.
+  int special = ~0 & (!n + (~0));
+  
+  return special << (32 + (~n + 1));
 }
 /* 
  * thirdBits - return word with every third bit (starting from the LSB) set to 1
@@ -330,6 +334,7 @@ int byteSwap(int x, int n, int m) {
  *   Rating: 2
  */
 int negate(int x) {
+  //slides give answer
   return ~x + 1;
 }
 /* 
@@ -343,7 +348,18 @@ int negate(int x) {
  *   Rating: 3
  */
 int bitMask(int highbit, int lowbit) {
-  return 0;
+  //first, we have to get a mask with the right number of ones
+  int mask = ~(~1 << (highbit + (~lowbit + 1)));
+
+  //do the subtraction, and see if we have a negative number
+  //if its negative, then we have to return all zeros
+  int signOfSub = (highbit + (~lowbit + 1) >> 31);
+
+  //now we can just shift that value over by the lowbit amount
+  // but if we have a negative, then we return all zeros
+  int value = (mask << lowbit) & ~signOfSub;
+
+  return value;
 }
 /* 
  * conditional - same as x ? y : z 
@@ -353,19 +369,17 @@ int bitMask(int highbit, int lowbit) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  //we want to and with all ones to get the answer that we want to return
-  //we know that !!x can either be a 0 or a 1, and negating that value 
-  //will give us either all 1s or all 0s, and we can AND with those to get the
-  //value that we want. We can OR those two sides because one side is going
-  //to be all zeros for sure, so then we can just return that when
-  //we are done.
+  //basically we are going to want to AND some number with either all zeros or all ones, 
+  //so figure out which value is going to be ANDd with which
   int whichOne = !!x;
 
-  //in order to make all ones or all zeros, so we can return a value
+  //if whichOne is 0, then it will be all 0s when negated because of overflow
+  //if its 1, then it will be set to all 1s
   int negation = ~whichOne + 1;
 
-  //now we know that we are going to have atleast one side be all ones, and
-  //so we can just AND the negation of that to clear the side that doesnt matter.
+  //depending on the negation value, we just AND one side with negation and the
+  //other side with the opposite. This way, there will always be a side that is all
+  //zeros, and the other side will be the value that is returned.
   int value = (negation & y) | (~negation & z);
 
   return value;
@@ -466,13 +480,15 @@ int absVal(int x) {
   int sign = x >> 31;
 
   //now if the sign is positive, then we just add 
-  //the initial value to it. 
+  //the initial value to it. If its negative, then this will overflow,
+  //which takes care of the addition of one problem that we have
+  //when we just try to return the negation of x as solution.
   int posAbs = sign + x;
 
   //now if the sign is negative, that means that
   //sign is going to be all ones. Meaning that if you
   //XOR by all ones, it is going to flip all the bits of
-  //whatever you XOR, which is how the negation happens.
+  //whatever you XOR, which gives absolute value.
   return posAbs ^ sign;
 }
 /*
@@ -493,7 +509,7 @@ int bitCount(int x) {
  *   Rating: 4
  */
 int bitParity(int x) {
-  return 2;
+  return x;
 }
 /*
  * satAdd - adds two numbers but when positive overflow occurs, returns
@@ -535,11 +551,9 @@ int sm2tc(int x) {
   //get the sign of the value
   int sign = x >> 31;
 
-  printf("Adding the negation: %d + %d = %d\n", x, ~x, (x + ~x) ^ sign);
+  //now we have to do some ANDs and ORs to make sure that
+  //the correct values are coming out based on the sign
+  int value = ((~(x & sign) + 1) ^ sign << 31)  | (~sign & x);
 
-  //now if the sign is negative, that means that
-  //sign is going to be all ones. Meaning that if you
-  //XOR by all ones, it is going to flip all the bits of
-  //whatever you XOR, which is how the negation happens.
-  return (x + ~x) ^ sign;
+  return value;
 }
