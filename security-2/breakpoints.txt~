@@ -1,0 +1,18 @@
+break explode_bomb
+break *0x400eda
+  commands
+    set $rip = 0x400f61
+  end
+break phase_6
+break *0x401286
+break *0x401265
+  commands
+    info reg
+  end
+break *0x40128e
+break *0x401272
+break *0x401280
+break *0x40129a
+break *0x4012b7
+break *0x4012c1
+break *0x4012d4
