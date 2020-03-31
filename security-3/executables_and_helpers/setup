@@ -1,0 +1,2 @@
+scl enable glibc-2.14 bash
+scl enable devtoolset-8 bash
